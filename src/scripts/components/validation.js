@@ -1,5 +1,6 @@
-const showInputError = (formElement, errorMessage, inputElement, settings) => {
+const showInputError = (formElement, inputElement, errorMessage, settings) => {
 	const errorElement = formElement.querySelector(`#${inputElement.id}-error`)
+
 	inputElement.classList.add(settings.inputErrorClass)
 	errorElement.textContent = errorMessage
 	errorElement.classList.add(settings.errorClass)
@@ -52,13 +53,13 @@ const hasInvalidInput = inputList => {
 }
 
 const disableSubmitButton = (buttonElement, settings) => {
-	buttonElement.setAttribute('disabled', false)
-	buttonElement.classList.remove(settings.inactiveButtonClass)
+	buttonElement.setAttribute('disabled', true)
+	buttonElement.classList.add(settings.inactiveButtonClass)
 }
 
 const enableSubmitButton = (buttonElement, settings) => {
-	buttonElement.setAttribute('disabled', true)
-	buttonElement.classList.add(settings.inactiveButtonClass)
+	buttonElement.setAttribute('disabled', false)
+	buttonElement.classList.remove(settings.inactiveButtonClass)
 }
 
 const toggleButtonState = (inputList, buttonElement, settings) => {

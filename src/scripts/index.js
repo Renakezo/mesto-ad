@@ -104,16 +104,19 @@ openProfileFormButton.addEventListener('click', () => {
 	profileTitleInput.value = profileTitle.textContent
 	profileDescriptionInput.value = profileDescription.textContent
 	openModalWindow(profileFormModalWindow)
+	clearValidation(profileForm, validationSettings)
 })
 
 profileAvatar.addEventListener('click', () => {
 	avatarForm.reset()
 	openModalWindow(avatarFormModalWindow)
+	clearValidation(avatarForm, validationSettings)
 })
 
 openCardFormButton.addEventListener('click', () => {
 	cardForm.reset()
 	openModalWindow(cardFormModalWindow)
+	clearValidation(cardForm, validationSettings)
 })
 
 // отображение карточек
@@ -131,5 +134,4 @@ initialCards.forEach(data => {
 const allPopups = document.querySelectorAll('.popup')
 allPopups.forEach(popup => {
 	setCloseModalWindowEventListeners(popup)
-	clearValidation(popup, validationSettings)
 })
