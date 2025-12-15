@@ -2,8 +2,8 @@ const showInputError = (formElement, inputElement, errorMessage, settings) => {
 	const errorElement = formElement.querySelector(`#${inputElement.id}-error`)
 
 	inputElement.classList.add(settings.inputErrorClass)
-	errorElement.textContent = errorMessage
 	errorElement.classList.add(settings.errorClass)
+	errorElement.textContent = errorMessage
 }
 
 const hideInputError = (formElement, inputElement, settings) => {
@@ -14,32 +14,12 @@ const hideInputError = (formElement, inputElement, settings) => {
 }
 
 const checkInputValidity = (formElement, inputElement, settings) => {
-	const nameRegex = /^[a-zA-Zа-яА-Я\s\-]+$/
-
 	if (inputElement.validity.valid) {
-		if (inputElement.dataset.errorMessage) {
-			if (
-				!nameRegex.test(inputElement.value) &&
-				inputElement.value.length > 0
-			) {
-				showInputError(
-					formElement,
-					inputElement,
-					inputElement.dataset.errorMessage,
-					settings
-				)
-				return false
-			}
-		}
 		hideInputError(formElement, inputElement, settings)
 		return true
 	} else {
 		let errorMessage = inputElement.validationMessage
-		if (
-			inputElement.dataset.errorMessage &&
-			!nameRegex.test(inputElement.value) &&
-			inputElement.value.length > 0
-		) {
+		if (inputElement.dataset.errorMessage) {
 			errorMessage = inputElement.dataset.errorMessage
 		}
 
@@ -58,7 +38,7 @@ const disableSubmitButton = (buttonElement, settings) => {
 }
 
 const enableSubmitButton = (buttonElement, settings) => {
-	buttonElement.setAttribute('disabled', false)
+	buttonElement.removeAttribute('disabled')
 	buttonElement.classList.remove(settings.inactiveButtonClass)
 }
 
