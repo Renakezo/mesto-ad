@@ -6,8 +6,16 @@
   Из index.js не допускается что то экспортировать
 */
 
-import { initialCards } from './cards.js'
-import { createCardElement, deleteCard, likeCard } from './components/card.js'
+import {
+	addCard,
+	changeLikeCardStatus,
+	deleteCard,
+	getCardList,
+	getUserInfo,
+	setAvatarInfo,
+	setUserInfo,
+} from './api.js'
+import { createCardElement } from './components/card.js'
 import {
 	closeModalWindow,
 	openModalWindow,
@@ -23,6 +31,7 @@ const profileTitleInput = profileForm.querySelector('.popup__input_type_name')
 const profileDescriptionInput = profileForm.querySelector(
 	'.popup__input_type_description'
 )
+const header = document.querySelector('.header')
 
 const cardFormModalWindow = document.querySelector('.popup_type_new-card')
 const cardForm = cardFormModalWindow.querySelector('.popup__form')
@@ -44,6 +53,18 @@ const avatarFormModalWindow = document.querySelector('.popup_type_edit-avatar')
 const avatarForm = avatarFormModalWindow.querySelector('.popup__form')
 const avatarInput = avatarForm.querySelector('.popup__input')
 
+const deleteCardFormModalWindow = document.querySelector(
+	'.popup_type_remove-card'
+)
+const deleteCardForm = deleteCardFormModalWindow.querySelector('.popup__form')
+
+const deleteCardFormButton = deleteCardForm.querySelector('.button')
+const profileFormButton = profileForm.querySelector('.button')
+const cardFormButton = cardForm.querySelector('.button')
+const avatarFormButton = avatarForm.querySelector('.button')
+
+const statisticModalWindow = document.querySelector('.popup_type_info')
+
 const handlePreviewPicture = ({ name, link }) => {
 	imageElement.src = link
 	imageElement.alt = name
@@ -53,34 +74,63 @@ const handlePreviewPicture = ({ name, link }) => {
 
 const handleProfileFormSubmit = evt => {
 	evt.preventDefault()
-	profileTitle.textContent = profileTitleInput.value
-	profileDescription.textContent = profileDescriptionInput.value
-	closeModalWindow(profileFormModalWindow)
+	profileFormButton.textContent = 'Сохранение...'
+	setUserInfo({
+		name: profileTitleInput.value,
+		about: profileDescriptionInput.value,
+	})
+		.then(userData => {
+			profileTitle.textContent = userData.name
+			profileDescription.textContent = userData.about
+			closeModalWindow(profileFormModalWindow)
+			profileFormButton.textContent = 'Сохранить'
+		})
+		.catch(err => {
+			console.log(err)
+		})
 }
 
 const handleAvatarFromSubmit = evt => {
 	evt.preventDefault()
-	profileAvatar.style.backgroundImage = `url(${avatarInput.value})`
-	closeModalWindow(avatarFormModalWindow)
+	avatarFormButton.textContent = 'Сохранение...'
+	setAvatarInfo({
+		avatar: avatarInput.value,
+	})
+		.then(avatarData => {
+			profileAvatar.style.backgroundImage = `url(${avatarData.avatar})`
+			closeModalWindow(avatarFormModalWindow)
+			avatarFormButton.textContent = 'Сохранить'
+		})
+		.catch(err => {
+			console.log(err)
+		})
 }
 
 const handleCardFormSubmit = evt => {
 	evt.preventDefault()
-	placesWrap.prepend(
-		createCardElement(
-			{
-				name: cardNameInput.value,
-				link: cardLinkInput.value,
-			},
-			{
-				onPreviewPicture: handlePreviewPicture,
-				onLikeIcon: likeCard,
-				onDeleteCard: deleteCard,
-			}
-		)
-	)
-
-	closeModalWindow(cardFormModalWindow)
+	cardFormButton.textContent = 'Создание...'
+	addCard({
+		name: cardNameInput.value,
+		link: cardLinkInput.value,
+	})
+		.then(cardData => {
+			placesWrap.prepend(
+				createCardElement(
+					cardData,
+					{
+						onPreviewPicture: handlePreviewPicture,
+						onLikeIcon: handleLikeCard,
+						onDeleteCard: handleDeleteCard,
+					},
+					cardData.owner._id
+				)
+			)
+			closeModalWindow(cardFormModalWindow)
+			cardFormButton.textContent = 'Создать'
+		})
+		.catch(err => {
+			console.log(err)
+		})
 }
 
 // Создание объекта с настройками валидации
@@ -119,15 +169,8 @@ openCardFormButton.addEventListener('click', () => {
 	clearValidation(cardForm, validationSettings)
 })
 
-// отображение карточек
-initialCards.forEach(data => {
-	placesWrap.append(
-		createCardElement(data, {
-			onPreviewPicture: handlePreviewPicture,
-			onLikeIcon: likeCard,
-			onDeleteCard: deleteCard,
-		})
-	)
+header.addEventListener('click', () => {
+	openStatistic()
 })
 
 //настраиваем обработчики закрытия попапов
@@ -135,3 +178,67 @@ const allPopups = document.querySelectorAll('.popup')
 allPopups.forEach(popup => {
 	setCloseModalWindowEventListeners(popup)
 })
+
+const handleDeleteCard = (cardElement, cardId) => {
+	openModalWindow(deleteCardFormModalWindow)
+
+	deleteCardForm.addEventListener('submit', event => {
+		event.preventDefault()
+		deleteCardFormButton.textContent = 'Удаление...'
+		deleteCard(cardId)
+			.then(() => {
+				cardElement.remove()
+				closeModalWindow(deleteCardFormModalWindow)
+				deleteCardFormButton.textContent = 'Да'
+			})
+			.catch(err => {
+				console.log(err)
+			})
+	})
+}
+
+const handleLikeCard = (likeButton, cardLikeCount, cardId) => {
+	changeLikeCardStatus(
+		cardId,
+		likeButton.classList.contains('card__like-button_is-active')
+	)
+		.then(likeData => {
+			likeButton.classList.toggle('card__like-button_is-active')
+			cardLikeCount.textContent = likeData.likes.length
+		})
+		.catch(err => {
+			console.log(err)
+		})
+}
+
+Promise.all([getCardList(), getUserInfo()])
+	.then(([cards, userData]) => {
+		cards.forEach(data => {
+			placesWrap.append(
+				createCardElement(
+					data,
+					{
+						onPreviewPicture: handlePreviewPicture,
+						onLikeIcon: handleLikeCard,
+						onDeleteCard: handleDeleteCard,
+					},
+					userData._id
+				)
+			)
+		})
+
+		profileTitle.textContent = userData.name
+		profileDescription.textContent = userData.about
+		profileAvatar.style.backgroundImage = `url(${userData.avatar})`
+	})
+	.catch(err => {
+		console.log(err)
+	})
+
+const openStatistic = () => {
+	openModalWindow(statisticModalWindow)
+	getCardList().then(cards => {
+		console.log(cards)
+		const statistics = calculateStatistics(cards)
+	})
+}
