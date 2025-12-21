@@ -238,7 +238,95 @@ Promise.all([getCardList(), getUserInfo()])
 const openStatistic = () => {
 	openModalWindow(statisticModalWindow)
 	getCardList().then(cards => {
-		console.log(cards)
 		const statistics = calculateStatistics(cards)
+
+		const statiscticContainer = document.querySelector('.popup_type_info')
+
+		const infoContainer = statiscticContainer.querySelector('.popup__info')
+		infoContainer.innerHTML = ''
+
+		const statsData = [
+			{ term: 'Всего пользователей', description: statistics.totalUsers },
+			{ term: 'Всего лайков', description: statistics.totalLikes },
+			{
+				term: 'Максимально лайков от одного',
+				description: statistics.maxLikesFromOne,
+			},
+			{ term: 'Чемпион лайков', description: statistics.likeChampion },
+		]
+
+		const definitionTemplate = document.querySelector(
+			'#popup-info-definition-template'
+		)
+
+		statsData.forEach(stat => {
+			const definitionElement = definitionTemplate.content.cloneNode(true)
+			const termElement = definitionElement.querySelector('.popup__info-term')
+			const descriptionElement = definitionElement.querySelector(
+				'.popup__info-description'
+			)
+
+			termElement.textContent = stat.term
+			descriptionElement.textContent = stat.description
+
+			infoContainer.appendChild(definitionElement)
+		})
+
+		const popularCardsList = statiscticContainer.querySelector('.popup__list')
+		popularCardsList.innerHTML = ''
+
+		const userTemplate = document.querySelector(
+			'#popup-info-user-preview-template'
+		)
+
+		statistics.popularCards.forEach(card => {
+			const userElement = userTemplate.content.cloneNode(true)
+			const badgeElement = userElement.querySelector('.popup__list-item')
+
+			badgeElement.textContent = card.name
+
+			popularCardsList.appendChild(userElement)
+		})
 	})
+}
+
+const calculateStatistics = cards => {
+	const allUsers = new Set()
+	const usersLikeCount = new Map()
+	const cardLikeCounts = []
+	let totalLikes = 0
+	let maxLikesFromOne = 0
+	let likeChampion = ''
+
+	cards.forEach(card => {
+		allUsers.add(card.owner._id)
+
+		const cardLikes = card.likes.length
+		cardLikeCounts.push(cardLikes)
+		totalLikes += cardLikes
+
+		card.likes.forEach(user => {
+			allUsers.add(user._id)
+
+			const currentCount = usersLikeCount.get(user._id) || 0
+			const newCount = currentCount + 1
+			usersLikeCount.set(user._id, newCount)
+
+			if (newCount > maxLikesFromOne) {
+				maxLikesFromOne = newCount
+				likeChampion = user.name
+			}
+		})
+	})
+
+	const sortedCards = [...cards].sort((a, b) => b.likes.length - a.likes.length)
+	const popularCards = sortedCards.slice(0, 3)
+
+	return {
+		totalUsers: allUsers.size,
+		totalLikes: totalLikes,
+		maxLikesFromOne: maxLikesFromOne,
+		likeChampion: likeChampion,
+		popularCards: popularCards,
+	}
 }
