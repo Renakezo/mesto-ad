@@ -1,71 +1,58 @@
-const config = {
-	baseUrl: `https://mesto.nomoreparties.co/v1/${
+import axios from 'axios'
+
+const api = axios.create({
+	baseURL: `https://mesto.nomoreparties.co/v1/${
 		import.meta.env.VITE_TOKEN_GROUP
 	}`,
 	headers: {
 		authorization: import.meta.env.VITE_TOKEN,
 		'Content-Type': 'application/json',
 	},
-}
+})
 
-const getResponseData = res => {
-	return res.ok ? res.json() : Promise.reject(`Ошибка: ${res.status}`)
-}
+api.interceptors.response.use(
+	response => response.data,
+	error => {
+		if (error.response) {
+			return Promise.reject(`Ошибка: ${error.response.status}`)
+		}
+	}
+)
 
 export const getUserInfo = () => {
-	return fetch(`${config.baseUrl}/users/me`, {
-		headers: config.headers,
-	}).then(getResponseData)
+	return api.get('/users/me')
 }
 
 export const getCardList = () => {
-	return fetch(`${config.baseUrl}/cards`, {
-		headers: config.headers,
-	}).then(getResponseData)
+	return api.get('/cards')
 }
 
 export const setUserInfo = ({ name, about }) => {
-	return fetch(`${config.baseUrl}/users/me`, {
-		method: 'PATCH',
-		headers: config.headers,
-		body: JSON.stringify({
-			name,
-			about,
-		}),
-	}).then(getResponseData)
+	return api.patch('/users/me', {
+		name,
+		about,
+	})
 }
 
 export const setAvatarInfo = ({ avatar }) => {
-	return fetch(`${config.baseUrl}/users/me/avatar`, {
-		method: 'PATCH',
-		headers: config.headers,
-		body: JSON.stringify({
-			avatar,
-		}),
-	}).then(getResponseData)
+	return api.patch('/users/me/avatar', {
+		avatar,
+	})
 }
 
 export const addCard = ({ name, link }) => {
-	return fetch(`${config.baseUrl}/cards`, {
-		method: 'POST',
-		headers: config.headers,
-		body: JSON.stringify({
-			name,
-			link,
-		}),
-	}).then(getResponseData)
+	return api.post('/cards', {
+		name,
+		link,
+	})
 }
 
 export const deleteCard = cardId => {
-	return fetch(`${config.baseUrl}/cards/${cardId}`, {
-		method: 'DELETE',
-		headers: config.headers,
-	}).then(getResponseData)
+	return api.delete(`/cards/${cardId}`)
 }
 
 export const changeLikeCardStatus = (cardId, isLiked) => {
-	return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
-		method: isLiked ? 'DELETE' : 'PUT',
-		headers: config.headers,
-	}).then(res => getResponseData(res))
+	return isLiked
+		? api.delete(`/cards/likes/${cardId}`)
+		: api.put(`/cards/likes/${cardId}`)
 }
