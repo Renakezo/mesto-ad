@@ -235,6 +235,7 @@ Promise.all([getCardList(), getUserInfo()])
 		console.log(err)
 	})
 
+// Статистика карточек
 const openStatistic = () => {
 	openModalWindow(statisticModalWindow)
 	getCardList().then(cards => {
@@ -246,13 +247,13 @@ const openStatistic = () => {
 		infoContainer.innerHTML = ''
 
 		const statsData = [
-			{ term: 'Всего пользователей', description: statistics.totalUsers },
-			{ term: 'Всего лайков', description: statistics.totalLikes },
+			{ term: 'Всего пользователей:', description: statistics.totalUsers },
+			{ term: 'Всего лайков:', description: statistics.totalLikes },
 			{
-				term: 'Максимально лайков от одного',
+				term: 'Максимально лайков от одного:',
 				description: statistics.maxLikesFromOne,
 			},
-			{ term: 'Чемпион лайков', description: statistics.likeChampion },
+			{ term: 'Чемпион лайков:', description: statistics.likeChampion },
 		]
 
 		const definitionTemplate = document.querySelector(
