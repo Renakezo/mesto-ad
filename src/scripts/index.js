@@ -242,7 +242,6 @@ const openStatistic = () => {
 		const statistics = calculateStatistics(cards)
 
 		const statiscticContainer = document.querySelector('.popup_type_info')
-
 		const infoContainer = statiscticContainer.querySelector('.popup__info')
 		infoContainer.innerHTML = ''
 
