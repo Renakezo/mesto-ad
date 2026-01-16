@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  VITE_TOKEN: ${{ secrets.VITE_TOKEN }}
+  VITE_TOKEN_GROUP: ${{ secrets.VITE_TOKEN_GROUP }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
